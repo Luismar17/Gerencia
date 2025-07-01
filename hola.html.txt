@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>LocalStorage Test</title>
+</head>
+<body>
+  <h1>Prueba de localStorage</h1>
+  <button onclick="guardar()">Guardar dato</button>
+  <button onclick="leer()">Leer dato</button>
+  <p id="resultado"></p>
+
+  <script>
+    function guardar() {
+      localStorage.setItem("mensaje", "¡Hola desde GitHub Pages!");
+      alert("Dato guardado en localStorage");
+    }
+
+    function leer() {
+      const mensaje = localStorage.getItem("mensaje");
+      document.getElementById("resultado").innerText = mensaje || "No hay datos aún.";
+    }
+  </script>
+</body>
+</html>
