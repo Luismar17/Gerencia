@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Votación de Proyectos Sostenibles</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background: #f5f5f5;
+    }
+    h1 {
+      text-align: center;
+    }
+    .container {
+      max-width: 600px;
+      margin: auto;
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    label {
+      display: block;
+      margin-top: 10px;
+    }
+    input[type="number"] {
+      width: 50px;
+      margin-left: 10px;
+    }
+    button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      background: #28a745;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .result {
+      margin-top: 30px;
+      background: #e9ffe8;
+      padding: 15px;
+      border: 1px solid #b2ffb1;
+      border-radius: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>Votación de Proyectos</h1>
+    
+    <form id="voteForm">
+      <label>
+        Tu nombre:
+        <select id="voter" required>
+          <option value="">-- Selecciona --</option>
+          <option value="Luis">Luis</option>
+          <option value="Daniel">Daniel</option>
+          <option value="Diana">Diana</option>
+          <option value="Maicol">Maicol</option>
+        </select>
+      </label>
+
+      <h3>Proyecto: Parques Eólicos - Luis</h3>
+      <label>Viabilidad <input type="number" min="1" max="10" name="Luis_V"></label>
+      <label>Impacto Ambiental <input type="number" min="1" max="10" name="Luis_IA"></label>
+      <label>Alcance <input type="number" min="1" max="10" name="Luis_A"></label>
+      <label>Innovación <input type="number" min="1" max="10" name="Luis_I"></label>
+
+      <h3>Proyecto: Restauración Manglares - Daniel</h3>
+      <label>Viabilidad <input type="number" min="1" max="10" name="Daniel_V"></label>
+      <label>Impacto Ambiental <input type="number" min="1" max="10" name="Daniel_IA"></label>
+      <label>Alcance <input type="number" min="1" max="10" name="Daniel_A"></label>
+      <label>Innovación <input type="number" min="1" max="10" name="Daniel_I"></label>
+
+      <h3>Proyecto: Microredes Solares - Diana</h3>
+      <label>Viabilidad <input type="number" min="1" max="10" name="Diana_V"></label>
+      <label>Impacto Ambiental <input type="number" min="1" max="10" name="Diana_IA"></label>
+      <label>Alcance <input type="number" min="1" max="10" name="Diana_A"></label>
+      <label>Innovación <input type="number" min="1" max="10" name="Diana_I"></label>
+
+      <h3>Proyecto: Eco-Turismo - Maicol</h3>
+      <label>Viabilidad <input type="number" min="1" max="10" name="Maicol_V"></label>
+      <label>Impacto Ambiental <input type="number" min="1" max="10" name="Maicol_IA"></label>
+      <label>Alcance <input type="number" min="1" max="10" name="Maicol_A"></label>
+      <label>Innovación <input type="number" min="1" max="10" name="Maicol_I"></label>
+
+      <button type="submit">Enviar Voto</button>
+    </form>
+
+    <div id="results" class="result" style="display:none;"></div>
+  </div>
+
+  <script>
+    const form = document.getElementById("voteForm");
+    const resultsDiv = document.getElementById("results");
+
+    // Inicializar datos en localStorage si no existen
+    const initVotes = () => {
+      if (!localStorage.votes) {
+        localStorage.votes = JSON.stringify({});
+      }
+    };
+
+    initVotes();
+
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      const voter = document.getElementById("voter").value;
+      if (!voter) return alert("Por favor, selecciona tu nombre.");
+
+      const formData = new FormData(form);
+      const votes = {};
+      for (let [key, value] of formData.entries()) {
+        votes[key] = parseInt(value);
+      }
+
+      let allVotes = JSON.parse(localStorage.votes);
+      allVotes[voter] = votes;
+      localStorage.votes = JSON.stringify(allVotes);
+
+      alert(`Voto de ${voter} guardado correctamente.`);
+
+      checkAllVoted();
+    });
+
+    function checkAllVoted() {
+      const names = ["Luis", "Daniel", "Diana", "Maicol"];
+      const allVotes = JSON.parse(localStorage.votes);
+
+      const voted = Object.keys(allVotes).length === names.length;
+
+      if (voted) {
+        calculateWinner();
+      }
+    }
+
+    function calculateWinner() {
+      const projects = {
+        Luis: { total: 0 },
+        Daniel: { total: 0 },
+        Diana: { total: 0 },
+        Maicol: { total: 0 }
+      };
+
+      const allVotes = JSON.parse(localStorage.votes);
+
+      for (const voter in allVotes) {
+        const vote = allVotes[voter];
+
+        projects.Luis.total += vote["Luis_V"] + vote["Luis_IA"] + vote["Luis_A"] + vote["Luis_I"];
+        projects.Daniel.total += vote["Daniel_V"] + vote["Daniel_IA"] + vote["Daniel_A"] + vote["Daniel_I"];
+        projects.Diana.total += vote["Diana_V"] + vote["Diana_IA"] + vote["Diana_A"] + vote["Diana_I"];
+        projects.Maicol.total += vote["Maicol_V"] + vote["Maicol_IA"] + vote["Maicol_A"] + vote["Maicol_I"];
+      }
+
+      // Ordenar proyectos por puntaje
+      const sorted = Object.entries(projects).sort((a, b) => b[1].total - a[1].total);
+
+      let resultHtml = "<h2>🏆 Resultados Finales:</h2>";
+      sorted.forEach(([name, data]) => {
+        resultHtml += `<p><strong>${name}</strong>: ${data.total} puntos</p>`;
+      });
+
+      resultHtml += `<h3 style="color:green;">✅ Ganador: ${sorted[0][0]} con ${sorted[0][1].total} puntos.</h3>`;
+
+      resultsDiv.innerHTML = resultHtml;
+      resultsDiv.style.display = "block";
+    }
+  </script>
+
+</body>
+</html>
