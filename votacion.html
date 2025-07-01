@@ -27,7 +27,7 @@
       border-radius: 10px;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
-    h1 {
+    h1, h2, h3 {
       margin-top: 0;
     }
     p.instructions {
@@ -76,13 +76,6 @@
     button:hover {
       background: #219150;
     }
-    .result {
-      margin-top: 30px;
-      background: #e9ffe8;
-      padding: 15px;
-      border: 1px solid #b2ffb1;
-      border-radius: 10px;
-    }
     .individual-result {
       margin-top: 20px;
       background: #fff;
@@ -109,6 +102,11 @@
       font-size: 0.9em;
       color: #aaa;
     }
+    #lastVoterMessage {
+      color: green;
+      font-weight: bold;
+      margin-top: 10px;
+    }
   </style>
 </head>
 <body>
@@ -120,15 +118,7 @@
 <div class="container">
   <h2>Instrucciones de Votación</h2>
   <p class="instructions">
-    Cada miembro del equipo debe seleccionar su nombre y evaluar todos los proyectos (incluyendo el propio) según los siguientes criterios:
-    <ul>
-      <li><strong>Innovación:</strong> ¿Qué tan original es el proyecto?</li>
-      <li><strong>Viabilidad Económica:</strong> ¿Es sostenible desde el punto de vista financiero?</li>
-      <li><strong>Impacto Ambiental:</strong> ¿Cuál es su beneficio para el medio ambiente?</li>
-      <li><strong>Escalabilidad / Alcance:</strong> ¿Hasta qué punto puede extenderse o replicarse?</li>
-      <li><strong>Comentario Final:</strong> Observaciones generales sobre el proyecto.</li>
-    </ul>
-    Usa una escala del <strong>1 al 10</strong>, donde <strong>1 = Muy bajo cumplimiento</strong> y <strong>10 = Alto cumplimiento</strong>.
+    Evalúa cada proyecto usando una escala del <strong>1 al 10</strong>, donde <strong>1 = Muy bajo cumplimiento</strong> y <strong>10 = Alto cumplimiento</strong>.
   </p>
 
   <form id="voteForm">
@@ -160,7 +150,7 @@
     <label>Comentario Final<textarea name="Diana_C"></textarea></label>
 
     <!-- Luis -->
-    <h3>Proyecto: Módulos De Bienestar Costero "Caribe Limpio" - Piloto Playa Blanca</h3>
+    <h3>Proyecto: Módulos De Bienestar Costero "Caribe Limpio"</h3>
     <label>Innovación <input type="number" min="1" max="10" name="Luis_I"></label>
     <label>Viabilidad Económica <input type="number" min="1" max="10" name="Luis_VE"></label>
     <label>Impacto Ambiental <input type="number" min="1" max="10" name="Luis_IA"></label>
@@ -177,10 +167,12 @@
 
     <button type="submit">Enviar Voto</button>
     <button type="button" onclick="downloadIndividualPDF()">Descargar Mi Evaluación (PDF)</button>
+    <button type="button" onclick="downloadAllVotesPDF()">Descargar Todos los Votos (PDF)</button>
+    <div id="lastVoterMessage"></div>
   </form>
 
   <div id="individualResults"></div>
-  <div id="results" class="result" style="display:none;"></div>
+  <div id="allVotesResults" style="margin-top: 30px;"></div>
 </div>
 
 <div class="footer">
@@ -191,8 +183,8 @@
   const form = document.getElementById("voteForm");
   const resultsDiv = document.getElementById("results");
   const voterSelect = document.getElementById("voter");
+  const lastVoterMsg = document.getElementById("lastVoterMessage");
 
-  // Inicializar localStorage si no existe
   if (!localStorage.votes) {
     localStorage.votes = JSON.stringify({});
   }
@@ -241,86 +233,23 @@
     allVotes[currentVoter] = votes;
     localStorage.votes = JSON.stringify(allVotes);
 
-    alert(`✅ Voto de ${currentVoter} guardado correctamente.`);
-    showIndividualResult(currentVoter);
-    checkAllVoted();
-  });
-
-  function checkAllVoted() {
+    // Mostrar mensaje si es el último
     const names = [
       "Daniel Jaramillo López",
       "Diana Cecilia Benavides Surata",
       "Luis Eduardo Martínez García",
       "Maicol Duban Niño Plazas"
     ];
-    const allVotes = JSON.parse(localStorage.votes || "{}");
-    const voted = Object.keys(allVotes).length === names.length;
+    const votedSoFar = Object.keys(allVotes).length;
 
-    if (voted) {
-      calculateWinner();
-    }
-  }
-
-  function calculateWinner() {
-    const projects = {
-      Daniel: { total: 0 },
-      Diana: { total: 0 },
-      Luis: { total: 0 },
-      Maicol: { total: 0 }
-    };
-
-    const allVotes = JSON.parse(localStorage.votes);
-
-    for (const voter in allVotes) {
-      const vote = allVotes[voter];
-
-      projects.Daniel.total += parseInt(vote["Daniel_I"] || 0) +
-                               parseInt(vote["Daniel_VE"] || 0) +
-                               parseInt(vote["Daniel_IA"] || 0) +
-                               parseInt(vote["Daniel_EA"] || 0);
-
-      projects.Diana.total += parseInt(vote["Diana_I"] || 0) +
-                              parseInt(vote["Diana_VE"] || 0) +
-                              parseInt(vote["Diana_IA"] || 0) +
-                              parseInt(vote["Diana_EA"] || 0);
-
-      projects.Luis.total += parseInt(vote["Luis_I"] || 0) +
-                             parseInt(vote["Luis_VE"] || 0) +
-                             parseInt(vote["Luis_IA"] || 0) +
-                             parseInt(vote["Luis_EA"] || 0);
-
-      projects.Maicol.total += parseInt(vote["Maicol_I"] || 0) +
-                               parseInt(vote["Maicol_VE"] || 0) +
-                               parseInt(vote["Maicol_IA"] || 0) +
-                               parseInt(vote["Maicol_EA"] || 0);
+    if (votedSoFar === names.length) {
+      lastVoterMsg.textContent = "🎉 ¡Usted es el último en votar! Todos han terminado.";
+    } else {
+      lastVoterMsg.textContent = "";
     }
 
-    const sorted = Object.entries(projects).sort((a, b) => b[1].total - a[1].total);
-
-    let resultHtml = "<h2>🏆 Resultados Finales:</h2>";
-    resultHtml += "<table border='1' style='width:100%;border-collapse:collapse;text-align:center;'>"+
-                  "<tr><th>Proyecto</th><th>Puntaje Total</th></tr>";
-
-    sorted.forEach(([name, data]) => {
-      resultHtml += `<tr><td>${name}</td><td>${data.total}</td></tr>`;
-    });
-
-    resultHtml += "</table>";
-    resultHtml += `<h3 style="color:green;">✅ Ganador: ${sorted[0][0]} con ${sorted[0][1].total} puntos.</h3>`;
-    resultHtml += "<h3>💬 Comentarios finales:</h3>";
-
-    for (const voter in allVotes) {
-      const vote = allVotes[voter];
-      resultHtml += `<strong>${voter}:</strong><br>`;
-      resultHtml += `Reciclando y estudiando ANDO: ${vote["Daniel_C"]}<br>`;
-      resultHtml += `R³ Oficina: ${vote["Diana_C"]}<br>`;
-      resultHtml += `Caribe Limpio: ${vote["Luis_C"]}<br>`;
-      resultHtml += `Reprogras aceites: ${vote["Maicol_C"]}<br><br>`;
-    }
-
-    resultsDiv.innerHTML = resultHtml;
-    resultsDiv.style.display = "block";
-  }
+    showIndividualResult(currentVoter);
+  });
 
   function showIndividualResult(voterName) {
     const allVotes = JSON.parse(localStorage.votes || "{}");
@@ -355,23 +284,48 @@
   }
 
   async function downloadIndividualPDF() {
-    const voter = currentVoter;
-    if (!voter) {
-      alert("❌ No has iniciado sesión.");
-      return;
-    }
-
     const element = document.querySelector(".individual-result");
     if (!element || !element.innerHTML.trim()) {
       alert("❌ No tienes datos para exportar.");
       return;
     }
 
-    const canvas = await html2canvas(element);
+    const canvas = await html2canvas(element, { scale: 2 });
     const imgData = canvas.toDataURL('image/png');
     const pdf = new jspdf.jsPDF();
     pdf.addImage(imgData, 'PNG', 10, 10);
-    pdf.save(`Evaluacion_${voter.replace(" ", "_")}.pdf`);
+    pdf.save(`Evaluacion_${currentVoter.replace(" ", "_")}.pdf`);
+  }
+
+  async function downloadAllVotesPDF() {
+    const allVotes = JSON.parse(localStorage.votes || "{}");
+    const container = document.createElement("div");
+    container.style.padding = "20px";
+
+    for (const voter in allVotes) {
+      const data = allVotes[voter];
+      let html = `
+        <h3>📄 Evaluación de: ${voter}</h3>
+        <table style="width:100%;border-collapse:collapse;">
+          <thead><tr>
+            <th>Proyecto</th><th>Innovación</th><th>Viab. Económica</th><th>Impacto Ambiental</th><th>Escalabilidad</th><th>Comentario</th>
+          </tr></thead><tbody>
+      `;
+      html += `<tr><td>Reciclando y estudiando ANDO</td><td>${data["Daniel_I"] || "-"}</td><td>${data["Daniel_VE"] || "-"}</td><td>${data["Daniel_IA"] || "-"}</td><td>${data["Daniel_EA"] || "-"}</td><td>${data["Daniel_C"] || "-"}</td></tr>`;
+      html += `<tr><td>R³ Oficina</td><td>${data["Diana_I"] || "-"}</td><td>${data["Diana_VE"] || "-"}</td><td>${data["Diana_IA"] || "-"}</td><td>${data["Diana_EA"] || "-"}</td><td>${data["Diana_C"] || "-"}</td></tr>`;
+      html += `<tr><td>Caribe Limpio</td><td>${data["Luis_I"] || "-"}</td><td>${data["Luis_VE"] || "-"}</td><td>${data["Luis_IA"] || "-"}</td><td>${data["Luis_EA"] || "-"}</td><td>${data["Luis_C"] || "-"}</td></tr>`;
+      html += `<tr><td>Reprogras aceites</td><td>${data["Maicol_I"] || "-"}</td><td>${data["Maicol_VE"] || "-"}</td><td>${data["Maicol_IA"] || "-"}</td><td>${data["Maicol_EA"] || "-"}</td><td>${data["Maicol_C"] || "-"}</td></tr>`;
+      html += `</tbody></table><br/><br/>`;
+      container.innerHTML += html;
+    }
+
+    document.body.appendChild(container);
+    const canvas = await html2canvas(container, { scale: 2 });
+    const imgData = canvas.toDataURL('image/png');
+    const pdf = new jspdf.jsPDF();
+    pdf.addImage(imgData, 'PNG', 10, 10);
+    pdf.save("Todos_los_votos.pdf");
+    document.body.removeChild(container);
   }
 </script>
 
