@@ -1,150 +1,162 @@
 <!DOCTYPE html>
-<html lang="es">
+<html>
 <head>
   <meta charset="UTF-8">
-  <title>Votación Proyectos Sostenibles</title>
-  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js "></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js "></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js "></script>
+  <title>Votación de Proyectos</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js "></script>
   <style>
-    /* Aquí va todo el estilo del HTML anterior */
+    body { font-family: Arial; max-width: 700px; margin: auto; padding: 20px; }
+    h2 { color: #2c3e50; }
+    label { display: block; margin-top: 10px; font-weight: bold; }
+    input[type="number"] { width: 60px; margin-left: 10px; }
+    textarea { width: 100%; height: 60px; margin-top: 5px; }
+    button { margin-top: 20px; padding: 10px 20px; background: #27ae60; color: white; border: none; cursor: pointer; }
+    .result { margin-top: 30px; background: #e9ffe8; padding: 15px; border-radius: 10px; display: none; }
   </style>
 </head>
 <body>
 
-<!-- Aquí va todo el contenido HTML del formulario que ya tienes -->
+<h2>🗳️ Votación de Proyectos Sostenibles</h2>
+
+<form id="voteForm">
+  <label>Tu nombre:
+    <select id="nombre" required>
+      <option value="">-- Selecciona --</option>
+      <option value="Daniel Jaramillo López">Daniel Jaramillo López</option>
+      <option value="Diana Cecilia Benavides Surata">Diana Cecilia Benavides Surata</option>
+      <option value="Luis Eduardo Martínez García">Luis Eduardo Martínez García</option>
+      <option value="Maicol Duban Niño Plazas">Maicol Duban Niño Plazas</option>
+    </select>
+  </label>
+
+  <h3>Proyecto: Reciclando y estudiando ANDO</h3>
+  <label>Innovación <input type="number" min="1" max="10" id="Daniel_I"></label>
+  <label>Viabilidad Económica <input type="number" min="1" max="10" id="Daniel_VE"></label>
+  <label>Impacto Ambiental <input type="number" min="1" max="10" id="Daniel_IA"></label>
+  <label>Escalabilidad / Alcance <input type="number" min="1" max="10" id="Daniel_EA"></label>
+
+  <h3>Proyecto: R³ Oficina (Reduce, Reutiliza, Recicla)</h3>
+  <label>Innovación <input type="number" min="1" max="10" id="Diana_I"></label>
+  <label>Viabilidad Económica <input type="number" min="1" max="10" id="Diana_VE"></label>
+  <label>Impacto Ambiental <input type="number" min="1" max="10" id="Diana_IA"></label>
+  <label>Escalabilidad / Alcance <input type="number" min="1" max="10" id="Diana_EA"></label>
+
+  <h3>Proyecto: Módulos De Bienestar Costero "Caribe Limpio"</h3>
+  <label>Innovación <input type="number" min="1" max="10" id="Luis_I"></label>
+  <label>Viabilidad Económica <input type="number" min="1" max="10" id="Luis_VE"></label>
+  <label>Impacto Ambiental <input type="number" min="1" max="10" id="Luis_IA"></label>
+  <label>Escalabilidad / Alcance <input type="number" min="1" max="10" id="Luis_EA"></label>
+
+  <h3>Proyecto: Reprogras aceites</h3>
+  <label>Innovación <input type="number" min="1" max="10" id="Maicol_I"></label>
+  <label>Viabilidad Económica <input type="number" min="1" max="10" id="Maicol_VE"></label>
+  <label>Impacto Ambiental <input type="number" min="1" max="10" id="Maicol_IA"></label>
+  <label>Escalabilidad / Alcance <input type="number" min="1" max="10" id="Maicol_EA"></label>
+
+  <label>Comentario Final<textarea id="comentario"></textarea></label>
+  <button type="submit">Enviar Voto</button>
+</form>
+
+<div id="results" class="result"></div>
 
 <script>
-  // Configuración Firebase
-  const firebaseConfig = {
-    apiKey: "TU_API_KEY",
-    authDomain: "tu-proyecto.firebaseapp.com",
-    databaseURL: "https://tu-proyecto.firebaseio.com ",
-    projectId: "tu-proyecto",
-    storageBucket: "tu-proyecto.appspot.com",
-    messagingSenderId: "1234567890",
-    appId: "1:1234567890:web:abc123xyz"
-  };
+  let ip = null;
 
-  // Inicializar Firebase
-  firebase.initializeApp(firebaseConfig);
-  const auth = firebase.auth();
-  const database = firebase.database();
+  // Obtener dirección IP del usuario
+  fetch("https://api.ipify.org ?format=json")
+    .then(response => response.json())
+    .then(data => ip = data.ip);
 
-  // Autenticar anónimamente
-  auth.signInAnonymously().catch(function(error) {
-    alert("Error al autenticarse");
-  });
-
-  // Obtener ID único del usuario anónimo
-  let userId = null;
-  auth.onAuthStateChanged(user => {
-    if (user) {
-      userId = user.uid;
-    }
-  });
-
-  // Manejar envío del formulario
   document.getElementById("voteForm").addEventListener("submit", function(e) {
     e.preventDefault();
 
-    const voter = document.getElementById("voter").value;
-    if (!voter) return alert("Por favor selecciona tu nombre.");
+    if (!ip) return alert("Esperando a obtener tu dirección IP...");
 
-    // Verificar si ya votó este usuario
-    database.ref('votes/' + userId).once('value', snapshot => {
-      if (snapshot.exists()) {
-        alert("Ya has votado anteriormente.");
-        return;
-      }
+    const nombre = document.getElementById("nombre").value;
+    const payload = {
+      nombre,
+      ip,
+      Daniel_I: document.getElementById("Daniel_I").value,
+      Daniel_VE: document.getElementById("Daniel_VE").value,
+      Daniel_IA: document.getElementById("Daniel_IA").value,
+      Daniel_EA: document.getElementById("Daniel_EA").value,
 
-      const formData = new FormData(document.getElementById("voteForm"));
-      const votes = {};
-      for (let [key, value] of formData.entries()) {
-        votes[key] = value;
-      }
+      Diana_I: document.getElementById("Diana_I").value,
+      Diana_VE: document.getElementById("Diana_VE").value,
+      Diana_IA: document.getElementById("Diana_IA").value,
+      Diana_EA: document.getElementById("Diana_EA").value,
 
-      // Guardar voto con ID único
-      database.ref('votes/' + userId).set({
-        voter,
-        votes,
-        timestamp: Date.now()
-      }).then(() => {
-        alert("✅ Voto guardado correctamente.");
-        checkAllVoted();
-      });
+      Luis_I: document.getElementById("Luis_I").value,
+      Luis_VE: document.getElementById("Luis_VE").value,
+      Luis_IA: document.getElementById("Luis_IA").value,
+      Luis_EA: document.getElementById("Luis_EA").value,
+
+      Maicol_I: document.getElementById("Maicol_I").value,
+      Maicol_VE: document.getElementById("Maicol_VE").value,
+      Maicol_IA: document.getElementById("Maicol_IA").value,
+      Maicol_EA: document.getElementById("Maicol_EA").value,
+
+      comentario: document.getElementById("comentario").value
+    };
+
+    fetch("https://script.google.com/macros/s/AKfycbza0yxZPzrD_DINVmQ3oQSyWDYKWsrC1kR8mfS5qJvso3Qjrvk6ndFKhXxpQyKx2xd2FQ/exec ", {
+      method: "POST",
+      body: JSON.stringify(payload)
+    }).then(() => {
+      alert("✅ Voto enviado correctamente.");
+      checkAllVoted();
     });
   });
 
   function checkAllVoted() {
-    database.ref('votes').on('value', snapshot => {
-      const votes = snapshot.val() || {};
-      const totalVotes = Object.keys(votes).length;
-
-      if (totalVotes === 4) {
-        calculateWinner(votes);
-      }
-    });
+    fetch("https://script.google.com/macros/s/AKfycbza0yxZPzrD_DINVmQ3oQSyWDYKWsrC1kR8mfS5qJvso3Qjrvk6ndFKhXxpQyKx2xd2FQ/exec?action=read")
+      .then(res => res.json())
+      .then(data => {
+        const voters = [...new Set(data.map(row => row[2]))]; // Columna de IPs
+        if (voters.length >= 4) {
+          calculateWinner(data);
+        }
+      });
   }
 
-  function calculateWinner(allVotes) {
-    const projects = {
-      Daniel: { total: 0 },
-      Diana: { total: 0 },
-      Luis: { total: 0 },
-      Maicol: { total: 0 }
+  function calculateWinner(data) {
+    const scores = {
+      Daniel: 0,
+      Diana: 0,
+      Luis: 0,
+      Maicol: 0
     };
 
-    for (const id in allVotes) {
-      const vote = allVotes[id].votes;
-
-      projects.Daniel.total += parseInt(vote["Daniel_I"] || 0) +
-                               parseInt(vote["Daniel_VE"] || 0) +
-                               parseInt(vote["Daniel_IA"] || 0) +
-                               parseInt(vote["Daniel_EA"] || 0);
-
-      projects.Diana.total += parseInt(vote["Diana_I"] || 0) +
-                              parseInt(vote["Diana_VE"] || 0) +
-                              parseInt(vote["Diana_IA"] || 0) +
-                              parseInt(vote["Diana_EA"] || 0);
-
-      projects.Luis.total += parseInt(vote["Luis_I"] || 0) +
-                             parseInt(vote["Luis_VE"] || 0) +
-                             parseInt(vote["Luis_IA"] || 0) +
-                             parseInt(vote["Luis_EA"] || 0);
-
-      projects.Maicol.total += parseInt(vote["Maicol_I"] || 0) +
-                               parseInt(vote["Maicol_VE"] || 0) +
-                               parseInt(vote["Maicol_IA"] || 0) +
-                               parseInt(vote["Maicol_EA"] || 0);
-    }
-
-    const sorted = Object.entries(projects).sort((a, b) => b[1].total - a[1].total);
-
-    let resultHtml = "<h2>🏆 Resultados Finales:</h2>";
-    sorted.forEach(([name, data]) => {
-      resultHtml += `<p><strong>${name}</strong>: ${data.total} puntos</p>`;
+    data.forEach(row => {
+      scores.Daniel += parseInt(row[3]) + parseInt(row[4]) + parseInt(row[5]) + parseInt(row[6]);
+      scores.Diana += parseInt(row[7]) + parseInt(row[8]) + parseInt(row[9]) + parseInt(row[10]);
+      scores.Luis += parseInt(row[11]) + parseInt(row[12]) + parseInt(row[13]) + parseInt(row[14]);
+      scores.Maicol += parseInt(row[15]) + parseInt(row[16]) + parseInt(row[17]) + parseInt(row[18]);
     });
 
-    resultHtml += `<h3 style="color:green;">✅ Ganador: ${sorted[0][0]} con ${sorted[0][1].total} puntos.</h3>`;
-    resultHtml += `<button onclick="generatePDF()">Descargar PDF</button>`;
+    const sorted = Object.entries(scores).sort((a, b) => b[1] - a[1]);
 
-    document.getElementById("results").innerHTML = resultHtml;
+    let html = "<h3>🏆 Resultados Finales:</h3>";
+    sorted.forEach(([name, score]) => {
+      html += `<p><strong>${name}:</strong> ${score} puntos</p>`;
+    });
+
+    html += `<h3 style="color:green;">✅ Ganador: ${sorted[0][0]} con ${sorted[0][1]} puntos.</h3>`;
+    html += `<button onclick="generatePDF()">Descargar PDF</button>`;
+
+    document.getElementById("results").innerHTML = html;
     document.getElementById("results").style.display = "block";
   }
 
   function generatePDF() {
     const doc = new jspdf.jsPDF();
-    doc.setFontSize(16);
     doc.text("Resultados de la Evaluación de Proyectos", 20, 20);
-    doc.setFontSize(12);
     doc.text("Este documento fue generado automáticamente.", 20, 30);
 
     const resultsDiv = document.getElementById("results");
-    const textLines = resultsDiv.innerText.split('\n');
+    const lines = resultsDiv.innerText.split('\n');
     let y = 40;
-    textLines.forEach(line => {
+    lines.forEach(line => {
       doc.text(line, 20, y);
       y += 10;
     });
@@ -152,6 +164,5 @@
     doc.save("resultados_votacion.pdf");
   }
 </script>
-
 </body>
 </html>
