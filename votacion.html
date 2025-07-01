@@ -1,215 +1,94 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>Votación Proyectos Sostenibles</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js "></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js "></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js "></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js "></script>
   <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      margin: 0;
-      background: #f4f6f9;
-      color: #333;
-    }
-    header {
-      background: #2c3e50;
-      color: white;
-      padding: 20px;
-      text-align: center;
-    }
-    .container {
-      max-width: 800px;
-      margin: 20px auto;
-      background: white;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-    h1 {
-      margin-top: 0;
-    }
-    p.instructions {
-      background: #e2f0ff;
-      padding: 15px;
-      border-left: 5px solid #3498db;
-      margin-bottom: 20px;
-      font-size: 1em;
-      line-height: 1.5;
-    }
-    label {
-      display: block;
-      margin-top: 10px;
-      font-weight: bold;
-    }
-    input[type="number"] {
-      width: 60px;
-      margin-left: 10px;
-      padding: 5px;
-      font-size: 1em;
-    }
-    textarea {
-      width: 100%;
-      height: 60px;
-      margin-top: 5px;
-      resize: vertical;
-      padding: 10px;
-      font-size: 1em;
-    }
-    select {
-      width: 100%;
-      padding: 8px;
-      margin-top: 5px;
-      font-size: 1em;
-    }
-    button {
-      margin-top: 20px;
-      padding: 10px 20px;
-      background: #27ae60;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      font-size: 1em;
-    }
-    button:hover {
-      background: #219150;
-    }
-    .result {
-      margin-top: 30px;
-      background: #e9ffe8;
-      padding: 15px;
-      border: 1px solid #b2ffb1;
-      border-radius: 10px;
-    }
-    .footer {
-      text-align: center;
-      padding: 20px;
-      font-size: 0.9em;
-      color: #aaa;
-    }
+    /* Aquí va todo el estilo del HTML anterior */
   </style>
 </head>
 <body>
 
-<header>
-  <h1>🗳️ Votación de Proyectos Sostenibles</h1>
-</header>
-
-<div class="container">
-  <h2>Instrucciones de Votación</h2>
-  <p class="instructions">
-    Cada miembro del equipo debe seleccionar su nombre y evaluar todos los proyectos (incluyendo el propio) según los siguientes criterios:
-    <ul>
-      <li><strong>Innovación:</strong> ¿Qué tan original es el proyecto?</li>
-      <li><strong>Viabilidad Económica:</strong> ¿Es sostenible desde el punto de vista financiero?</li>
-      <li><strong>Impacto Ambiental:</strong> ¿Cuál es su beneficio para el medio ambiente?</li>
-      <li><strong>Escalabilidad / Alcance:</strong> ¿Hasta qué punto puede extenderse o replicarse?</li>
-      <li><strong>Comentario Final:</strong> Observaciones generales sobre el proyecto.</li>
-    </ul>
-    Usa una escala del <strong>1 al 10</strong>, donde <strong>1 = Muy bajo cumplimiento</strong> y <strong>10 = Alto cumplimiento</strong>.
-  </p>
-
-  <form id="voteForm">
-    <label>
-      Tu nombre:
-      <select id="voter" required>
-        <option value="">-- Selecciona tu nombre --</option>
-        <option value="Daniel Jaramillo López">Daniel Jaramillo López</option>
-        <option value="Diana Cecilia Benavides Surata">Diana Cecilia Benavides Surata</option>
-        <option value="Luis Eduardo Martínez García">Luis Eduardo Martínez García</option>
-        <option value="Maicol Duban Niño Plazas">Maicol Duban Niño Plazas</option>
-      </select>
-    </label>
-
-    <!-- Daniel -->
-    <h3>Proyecto: Reciclando y estudiando ANDO</h3>
-    <label>Innovación <input type="number" min="1" max="10" name="Daniel_I"></label>
-    <label>Viabilidad Económica <input type="number" min="1" max="10" name="Daniel_VE"></label>
-    <label>Impacto Ambiental <input type="number" min="1" max="10" name="Daniel_IA"></label>
-    <label>Escalabilidad / Alcance <input type="number" min="1" max="10" name="Daniel_EA"></label>
-    <label>Comentario Final<textarea name="Daniel_C"></textarea></label>
-
-    <!-- Diana -->
-    <h3>Proyecto: R³ Oficina (Reduce, Reutiliza, Recicla)</h3>
-    <label>Innovación <input type="number" min="1" max="10" name="Diana_I"></label>
-    <label>Viabilidad Económica <input type="number" min="1" max="10" name="Diana_VE"></label>
-    <label>Impacto Ambiental <input type="number" min="1" max="10" name="Diana_IA"></label>
-    <label>Escalabilidad / Alcance <input type="number" min="1" max="10" name="Diana_EA"></label>
-    <label>Comentario Final<textarea name="Diana_C"></textarea></label>
-
-    <!-- Luis -->
-    <h3>Proyecto: Módulos De Bienestar Costero "Caribe Limpio" - Piloto Playa Blanca</h3>
-    <label>Innovación <input type="number" min="1" max="10" name="Luis_I"></label>
-    <label>Viabilidad Económica <input type="number" min="1" max="10" name="Luis_VE"></label>
-    <label>Impacto Ambiental <input type="number" min="1" max="10" name="Luis_IA"></label>
-    <label>Escalabilidad / Alcance <input type="number" min="1" max="10" name="Luis_EA"></label>
-    <label>Comentario Final<textarea name="Luis_C"></textarea></label>
-
-    <!-- Maicol -->
-    <h3>Proyecto: Reprogras aceites</h3>
-    <label>Innovación <input type="number" min="1" max="10" name="Maicol_I"></label>
-    <label>Viabilidad Económica <input type="number" min="1" max="10" name="Maicol_VE"></label>
-    <label>Impacto Ambiental <input type="number" min="1" max="10" name="Maicol_IA"></label>
-    <label>Escalabilidad / Alcance <input type="number" min="1" max="10" name="Maicol_EA"></label>
-    <label>Comentario Final<textarea name="Maicol_C"></textarea></label>
-
-    <button type="submit">Enviar Voto</button>
-  </form>
-
-  <div id="results" class="result" style="display:none;"></div>
-</div>
-
-<div class="footer">
-  &copy; 2025 | Sistema de Evaluación de Proyectos Sostenibles
-</div>
+<!-- Aquí va todo el contenido HTML del formulario que ya tienes -->
 
 <script>
-  const form = document.getElementById("voteForm");
-  const resultsDiv = document.getElementById("results");
+  // Configuración Firebase
+  const firebaseConfig = {
+    apiKey: "TU_API_KEY",
+    authDomain: "tu-proyecto.firebaseapp.com",
+    databaseURL: "https://tu-proyecto.firebaseio.com ",
+    projectId: "tu-proyecto",
+    storageBucket: "tu-proyecto.appspot.com",
+    messagingSenderId: "1234567890",
+    appId: "1:1234567890:web:abc123xyz"
+  };
 
-  // Inicializar localStorage si no existe
-  if (!localStorage.votes) {
-    localStorage.votes = JSON.stringify({});
-  }
+  // Inicializar Firebase
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const database = firebase.database();
 
-  form.addEventListener("submit", function (e) {
+  // Autenticar anónimamente
+  auth.signInAnonymously().catch(function(error) {
+    alert("Error al autenticarse");
+  });
+
+  // Obtener ID único del usuario anónimo
+  let userId = null;
+  auth.onAuthStateChanged(user => {
+    if (user) {
+      userId = user.uid;
+    }
+  });
+
+  // Manejar envío del formulario
+  document.getElementById("voteForm").addEventListener("submit", function(e) {
     e.preventDefault();
-    const voter = document.getElementById("voter").value;
-    if (!voter) return alert("Por favor, selecciona tu nombre.");
 
-    const formData = new FormData(form);
-    const votes = {};
-    for (let [key, value] of formData.entries()) {
-      if (key.includes("_")) {
+    const voter = document.getElementById("voter").value;
+    if (!voter) return alert("Por favor selecciona tu nombre.");
+
+    // Verificar si ya votó este usuario
+    database.ref('votes/' + userId).once('value', snapshot => {
+      if (snapshot.exists()) {
+        alert("Ya has votado anteriormente.");
+        return;
+      }
+
+      const formData = new FormData(document.getElementById("voteForm"));
+      const votes = {};
+      for (let [key, value] of formData.entries()) {
         votes[key] = value;
       }
-    }
 
-    let allVotes = JSON.parse(localStorage.votes);
-    allVotes[voter] = votes;
-    localStorage.votes = JSON.stringify(allVotes);
-
-    alert(`✅ Voto de ${voter} guardado correctamente.`);
-
-    checkAllVoted();
+      // Guardar voto con ID único
+      database.ref('votes/' + userId).set({
+        voter,
+        votes,
+        timestamp: Date.now()
+      }).then(() => {
+        alert("✅ Voto guardado correctamente.");
+        checkAllVoted();
+      });
+    });
   });
 
   function checkAllVoted() {
-    const names = [
-      "Daniel Jaramillo López",
-      "Diana Cecilia Benavides Surata",
-      "Luis Eduardo Martínez García",
-      "Maicol Duban Niño Plazas"
-    ];
-    const allVotes = JSON.parse(localStorage.votes);
-    const voted = Object.keys(allVotes).length === names.length;
+    database.ref('votes').on('value', snapshot => {
+      const votes = snapshot.val() || {};
+      const totalVotes = Object.keys(votes).length;
 
-    if (voted) {
-      calculateWinner();
-    }
+      if (totalVotes === 4) {
+        calculateWinner(votes);
+      }
+    });
   }
 
-  function calculateWinner() {
+  function calculateWinner(allVotes) {
     const projects = {
       Daniel: { total: 0 },
       Diana: { total: 0 },
@@ -217,10 +96,8 @@
       Maicol: { total: 0 }
     };
 
-    const allVotes = JSON.parse(localStorage.votes);
-
-    for (const voter in allVotes) {
-      const vote = allVotes[voter];
+    for (const id in allVotes) {
+      const vote = allVotes[id].votes;
 
       projects.Daniel.total += parseInt(vote["Daniel_I"] || 0) +
                                parseInt(vote["Daniel_VE"] || 0) +
@@ -251,9 +128,28 @@
     });
 
     resultHtml += `<h3 style="color:green;">✅ Ganador: ${sorted[0][0]} con ${sorted[0][1].total} puntos.</h3>`;
+    resultHtml += `<button onclick="generatePDF()">Descargar PDF</button>`;
 
-    resultsDiv.innerHTML = resultHtml;
-    resultsDiv.style.display = "block";
+    document.getElementById("results").innerHTML = resultHtml;
+    document.getElementById("results").style.display = "block";
+  }
+
+  function generatePDF() {
+    const doc = new jspdf.jsPDF();
+    doc.setFontSize(16);
+    doc.text("Resultados de la Evaluación de Proyectos", 20, 20);
+    doc.setFontSize(12);
+    doc.text("Este documento fue generado automáticamente.", 20, 30);
+
+    const resultsDiv = document.getElementById("results");
+    const textLines = resultsDiv.innerText.split('\n');
+    let y = 40;
+    textLines.forEach(line => {
+      doc.text(line, 20, y);
+      y += 10;
+    });
+
+    doc.save("resultados_votacion.pdf");
   }
 </script>
 
