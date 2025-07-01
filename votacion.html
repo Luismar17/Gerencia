@@ -64,7 +64,7 @@
       font-size: 1em;
     }
     button {
-      margin-top: 20px;
+      margin-top: 10px;
       padding: 10px 20px;
       background: #27ae60;
       color: white;
@@ -82,6 +82,26 @@
       padding: 15px;
       border: 1px solid #b2ffb1;
       border-radius: 10px;
+    }
+    .individual-result {
+      margin-top: 20px;
+      background: #fff;
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: center;
+    }
+    th {
+      background-color: #f2f2f2;
     }
     .footer {
       text-align: center;
@@ -156,9 +176,10 @@
     <label>Comentario Final<textarea name="Maicol_C"></textarea></label>
 
     <button type="submit">Enviar Voto</button>
-    <button type="button" onclick="downloadResults()">Descargar Resultados (PDF)</button>
+    <button type="button" onclick="downloadIndividualPDF()">Descargar Mi Evaluación (PDF)</button>
   </form>
 
+  <div id="individualResults"></div>
   <div id="results" class="result" style="display:none;"></div>
 </div>
 
@@ -221,7 +242,7 @@
     localStorage.votes = JSON.stringify(allVotes);
 
     alert(`✅ Voto de ${currentVoter} guardado correctamente.`);
-
+    showIndividualResult(currentVoter);
     checkAllVoted();
   });
 
@@ -232,7 +253,7 @@
       "Luis Eduardo Martínez García",
       "Maicol Duban Niño Plazas"
     ];
-    const allVotes = JSON.parse(localStorage.votes);
+    const allVotes = JSON.parse(localStorage.votes || "{}");
     const voted = Object.keys(allVotes).length === names.length;
 
     if (voted) {
@@ -301,10 +322,48 @@
     resultsDiv.style.display = "block";
   }
 
-  async function downloadResults() {
-    const element = document.getElementById('results');
-    if (!element.innerText.trim()) {
-      alert("No hay resultados para descargar.");
+  function showIndividualResult(voterName) {
+    const allVotes = JSON.parse(localStorage.votes || "{}");
+    const votes = allVotes[voterName];
+
+    if (!votes) return;
+
+    let html = `
+      <div class="individual-result">
+        <h2>📄 Tu Evaluación - ${voterName}</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Proyecto</th>
+              <th>Innovación</th>
+              <th>Viab. Económica</th>
+              <th>Impacto Ambiental</th>
+              <th>Escalabilidad</th>
+              <th>Comentario</th>
+            </tr>
+          </thead>
+          <tbody>
+    `;
+
+    html += `<tr><td>Reciclando y estudiando ANDO</td><td>${votes["Daniel_I"] || "-"}</td><td>${votes["Daniel_VE"] || "-"}</td><td>${votes["Daniel_IA"] || "-"}</td><td>${votes["Daniel_EA"] || "-"}</td><td>${votes["Daniel_C"] || "-"}</td></tr>`;
+    html += `<tr><td>R³ Oficina</td><td>${votes["Diana_I"] || "-"}</td><td>${votes["Diana_VE"] || "-"}</td><td>${votes["Diana_IA"] || "-"}</td><td>${votes["Diana_EA"] || "-"}</td><td>${votes["Diana_C"] || "-"}</td></tr>`;
+    html += `<tr><td>Caribe Limpio</td><td>${votes["Luis_I"] || "-"}</td><td>${votes["Luis_VE"] || "-"}</td><td>${votes["Luis_IA"] || "-"}</td><td>${votes["Luis_EA"] || "-"}</td><td>${votes["Luis_C"] || "-"}</td></tr>`;
+    html += `<tr><td>Reprogras aceites</td><td>${votes["Maicol_I"] || "-"}</td><td>${votes["Maicol_VE"] || "-"}</td><td>${votes["Maicol_IA"] || "-"}</td><td>${votes["Maicol_EA"] || "-"}</td><td>${votes["Maicol_C"] || "-"}</td></tr>`;
+
+    html += `</tbody></table></div>`;
+    document.getElementById("individualResults").innerHTML = html;
+  }
+
+  async function downloadIndividualPDF() {
+    const voter = currentVoter;
+    if (!voter) {
+      alert("❌ No has iniciado sesión.");
+      return;
+    }
+
+    const element = document.querySelector(".individual-result");
+    if (!element || !element.innerHTML.trim()) {
+      alert("❌ No tienes datos para exportar.");
       return;
     }
 
@@ -312,7 +371,7 @@
     const imgData = canvas.toDataURL('image/png');
     const pdf = new jspdf.jsPDF();
     pdf.addImage(imgData, 'PNG', 10, 10);
-    pdf.save("Resultados_Votacion.pdf");
+    pdf.save(`Evaluacion_${voter.replace(" ", "_")}.pdf`);
   }
 </script>
 
