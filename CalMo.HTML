@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora Premium de Rendimiento de Inversión</title>
+    
+    <!-- Fuentes -->
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    
+    <!-- Chart.js v4 -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        :root {
+            --primary: #1a202c;
+            --secondary: #3182ce;
+            --accent: #38a169;
+            --light: #f8fafc;
+            --gray-100: #f1f5f9;
+            --gray-200: #e2e8f0;
+            --gray-700: #334155;
+            --text: #1e293b;
+            --text-light: #64748b;
+            --card-bg: #ffffff;
+            --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        .dark-mode {
+            --primary: #f1f5f9;
+            --text: #f8fafc;
+            --text-light: #cbd5e1;
+            --card-bg: #1e293b;
+            --gray-100: #1e293b;
+            --gray-200: #334155;
+            --light: #0f172a;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%) !important;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 20px;
+            transition: all 0.4s ease;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+            position: relative;
+        }
+
+        header::after {
+            content: '';
+            position: absolute;
+            bottom: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 4px;
+            background: linear-gradient(to right, var(--secondary), var(--accent));
+            border-radius: 2px;
+        }
+
+        header h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.8rem;
+            font-weight: 800;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 0.8rem;
+        }
+
+        header p {
+            color: var(--text-light);
+            font-size: 1.15rem;
+            max-width: 650px;
+            margin: 0 auto 1.8rem;
+            line-height: 1.6;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            padding: 2.5rem;
+            margin-bottom: 2.2rem;
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card h2 {
+            font-size: 1.8rem;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .form-group {
+            margin-bottom: 1.6rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.8rem;
+            font-weight: 600;
+            color: var(--text);
+            font-size: 1.05rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid var(--gray-200);
+            border-radius: 12px;
+            font-size: 1.1rem;
+            background-color: var(--gray-100);
+            color: var(--text);
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--secondary);
+            box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.2);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 1.5rem;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 1.1rem;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            border: none;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--secondary), #2b6cb0);
+            color: white;
+            box-shadow: 0 4px 15px rgba(49, 130, 206, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(49, 130, 206, 0.5);
+        }
+
+        .btn-secondary {
+            background: var(--gray-200);
+            color: var(--text);
+        }
+
+        .btn-secondary:hover {
+            background: var(--gray-700);
+            color: white;
+        }
+
+        .results .result-group {
+            display: flex;
+            justify-content: space-between;
+            padding: 1rem 0;
+            border-bottom: 1px dashed var(--gray-200);
+        }
+
+        .results .result-group:last-child {
+            border-bottom: none;
+        }
+
+        .result-value {
+            font-weight: 700;
+            color: var(--primary);
+            font-size: 1.15rem;
+        }
+
+        .result-in-words {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-top: 4px;
+            font-style: italic;
+            text-align: right;
+        }
+
+        .chart-container {
+            height: 300px;
+            margin-top: 2rem;
+        }
+
+        .result-summary {
+            margin-top: 1.8rem;
+            padding: 1.3rem;
+            border-radius: 14px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 1.15rem;
+            line-height: 1.5;
+        }
+
+        .result-summary.positive {
+            background-color: #e8f5e9;
+            color: #1b5e20;
+            border: 1px solid #c8e6c9;
+        }
+
+        .result-summary.negative {
+            background-color: #ffebee;
+            color: #b71c1c;
+            border: 1px solid #ffcdd2;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 2rem;
+            color: var(--text-light);
+            font-size: 0.95rem;
+            padding-top: 1.2rem;
+            border-top: 1px solid var(--gray-200);
+        }
+
+        @media (max-width: 768px) {
+            .btn-group { flex-direction: column; }
+            header h1 { font-size: 2.2rem; }
+            .card { padding: 1.8rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Calculadora Premium de Rendimiento</h1>
+            <p>Proyecta el futuro de tus inversiones con precisión y claridad financiera.</p>
+        </header>
+
+        <div class="card">
+            <h2><i class="fas fa-chart-line"></i> Configura tu Inversión</h2>
+            <div class="form-group">
+                <label for="initialInvestment"><i class="fas fa-wallet"></i> Inversión Inicial ($ COP):</label>
+                <input type="number" id="initialInvestment" value="9000000" step="1000000" min="0">
+            </div>
+            <div class="form-group">
+                <label for="initialCoinValue"><i class="fas fa-coins"></i> Valor Inicial del Activo ($ COP):</label>
+                <input type="number" id="initialCoinValue" value="0.000025" step="0.000001" min="0">
+            </div>
+            <div class="form-group">
+                <label for="finalCoinValue"><i class="fas fa-bullseye"></i> Valor Final Proyectado ($ COP):</label>
+                <input type="number" id="finalCoinValue" value="0.098" step="0.001" min="0">
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-primary" onclick="calculateInvestment()">
+                    <i class="fas fa-calculator"></i> Calcular
+                </button>
+                <button class="btn btn-secondary" onclick="resetForm()">
+                    <i class="fas fa-redo"></i> Reiniciar
+                </button>
+            </div>
+        </div>
+
+        <div class="card results" id="resultsCard" style="display:none;">
+            <h2><i class="fas fa-chart-pie"></i> Resultados Detallados</h2>
+            
+            <div class="result-group">
+                <span><i class="fas fa-money-bill-wave"></i> Valor Futuro:</span>
+                <div style="text-align: right;">
+                    <span id="futureValue" class="result-value"></span>
+                    <div id="futureValueWords" class="result-in-words"></div>
+                </div>
+            </div>
+            
+            <div class="result-group">
+                <span><i class="fas fa-arrow-trend-up"></i> Ganancia/Pérdida:</span>
+                <div style="text-align: right;">
+                    <span id="profitOrLoss" class="result-value"></span>
+                    <div id="profitOrLossWords" class="result-in-words"></div>
+                </div>
+            </div>
+            
+            <div class="result-group">
+                <span><i class="fas fa-percentage"></i> Rendimiento:</span>
+                <span id="percentageChange" class="result-value"></span>
+            </div>
+
+            <div class="result-summary" id="resultSummary"></div>
+
+            <div class="chart-container">
+                <canvas id="investmentChart"></canvas>
+            </div>
+        </div>
+
+        <footer>
+            <p><i class="fas fa-lock"></i> Cálculo 100% local. Tus datos no se envían.</p>
+            <p><i class="fas fa-copyright"></i> Calculadora Financiera | 2025</p>
+        </footer>
+    </div>
+
+    <script>
+        let chartInstance = null;
+
+        function calculateInvestment() {
+            const initialInvestment = parseFloat(document.getElementById('initialInvestment').value);
+            const initialCoinValue = parseFloat(document.getElementById('initialCoinValue').value);
+            const finalCoinValue = parseFloat(document.getElementById('finalCoinValue').value);
+
+            if (isNaN(initialInvestment) || isNaN(initialCoinValue) || isNaN(finalCoinValue) || initialCoinValue <= 0) {
+                alert("Por favor, introduce valores numéricos válidos. El valor inicial del activo debe ser mayor que cero.");
+                return;
+            }
+
+            const numberOfCoins = initialInvestment / initialCoinValue;
+            const futureValue = numberOfCoins * finalCoinValue;
+            const profitOrLoss = futureValue - initialInvestment;
+            const percentageChange = initialInvestment === 0 ? 0 : ((futureValue - initialInvestment) / initialInvestment) * 100;
+
+            document.getElementById('resultsCard').style.display = 'block';
+
+            // Formatear valores
+            const fvFormatted = formatCurrencyCOP(futureValue);
+            const plFormatted = formatCurrencyCOP(profitOrLoss);
+
+            document.getElementById('futureValue').textContent = fvFormatted;
+            document.getElementById('profitOrLoss').textContent = plFormatted;
+            document.getElementById('percentageChange').textContent = (percentageChange >= 0 ? '+' : '') + percentageChange.toFixed(2) + '%';
+
+            // En letras
+            document.getElementById('futureValueWords').textContent = numberToWords(Math.abs(futureValue)) + ' pesos';
+            document.getElementById('profitOrLossWords').textContent = numberToWords(Math.abs(profitOrLoss)) + ' pesos';
+
+            // Resumen
+            const resultSummary = document.getElementById('resultSummary');
+            if (profitOrLoss >= 0) {
+                resultSummary.textContent = `¡Excelente! Tu inversión crecería un ${percentageChange.toFixed(2)}%.`;
+                resultSummary.className = 'result-summary positive';
+            } else {
+                resultSummary.textContent = `Tu inversión tendría una pérdida del ${Math.abs(percentageChange).toFixed(2)}%.`;
+                resultSummary.className = 'result-summary negative';
+            }
+
+            // Renderizar gráfico
+            renderChart(initialInvestment, futureValue);
+        }
+
+        function resetForm() {
+            document.getElementById('initialInvestment').value = '9000000';
+            document.getElementById('initialCoinValue').value = '0.000025';
+            document.getElementById('finalCoinValue').value = '0.098';
+            document.getElementById('resultsCard').style.display = 'none';
+            if (chartInstance) {
+                chartInstance.destroy();
+                chartInstance = null;
+            }
+        }
+
+        function formatCurrencyCOP(value) {
+            return new Intl.NumberFormat('es-CO', {
+                style: 'currency',
+                currency: 'COP',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            }).format(value);
+        }
+
+        function numberToWords(num) {
+            if (num === 0) return "cero";
+            num = Math.floor(num);
+            if (num >= 1e12) return "monto muy grande";
+
+            const unidades = ["", "un", "dos", "tres", "cuatro", "cinco", "seis", "siete", "ocho", "nueve"];
+            const especiales = ["diez", "once", "doce", "trece", "catorce", "quince", "dieciséis", "diecisiete", "dieciocho", "diecinueve"];
+            const decenas = ["", "", "veinte", "treinta", "cuarenta", "cincuenta", "sesenta", "setenta", "ochenta", "noventa"];
+            const centenas = ["", "ciento", "doscientos", "trescientos", "cuatrocientos", "quinientos", "seiscientos", "setecientos", "ochocientos", "novecientos"];
+
+            function convertirMenor1000(n) {
+                if (n === 0) return "";
+                if (n < 10) return unidades[n];
+                if (n < 20) return especiales[n - 10];
+                if (n < 100) {
+                    const d = Math.floor(n / 10);
+                    const u = n % 10;
+                    if (u === 0) return decenas[d];
+                    return d === 2 ? "veinti" + unidades[u] : decenas[d] + " y " + unidades[u];
+                }
+                if (n === 100) return "cien";
+                const c = Math.floor(n / 100);
+                const resto = n % 100;
+                return centenas[c] + (resto > 0 ? " " + convertirMenor1000(resto) : "");
+            }
+
+            let partes = [];
+            if (num >= 1e9) {
+                const billones = Math.floor(num / 1e9);
+                partes.push(convertirMenor1000(billones) + " mil millones");
+                num %= 1e9;
+            }
+            if (num >= 1e6) {
+                const millones = Math.floor(num / 1e6);
+                partes.push(convertirMenor1000(millones) + (millones === 1 ? " millón" : " millones"));
+                num %= 1e6;
+            }
+            if (num >= 1000) {
+                const miles = Math.floor(num / 1000);
+                const textoMiles = miles === 1 ? "mil" : convertirMenor1000(miles) + " mil";
+                partes.push(textoMiles);
+                num %= 1000;
+            }
+            if (num > 0) {
+                partes.push(convertirMenor1000(num));
+            }
+
+            let resultado = partes.join(" ");
+            resultado = resultado.replace("un mil", "mil");
+            return resultado.charAt(0).toUpperCase() + resultado.slice(1);
+        }
+
+        function renderChart(initial, future) {
+            const ctx = document.getElementById('investmentChart').getContext('2d');
+
+            if (chartInstance) {
+                chartInstance.destroy();
+            }
+
+            // Datos para gráfico combinado: barras + línea
+            chartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Inversión Inicial', 'Valor Futuro'],
+                    datasets: [
+                        {
+                            label: 'Valor ($ COP)',
+                            data: [initial, future],
+                            backgroundColor: [
+                                'rgba(49, 130, 206, 0.7)',
+                                'rgba(56, 161, 105, 0.7)'
+                            ],
+                            borderColor: [
+                                'rgba(49, 130, 206, 1)',
+                                'rgba(56, 161, 105, 1)'
+                            ],
+                            borderWidth: 2,
+                            borderRadius: 6,
+                            borderSkipped: false,
+                            type: 'bar'
+                        },
+                        {
+                            label: 'Tendencia',
+                            data: [initial, future],
+                            borderColor: 'rgba(239, 68, 68, 0.9)',
+                            backgroundColor: 'transparent',
+                            borderWidth: 3,
+                            pointRadius: 6,
+                            pointBackgroundColor: 'rgba(239, 68, 68, 1)',
+                            pointBorderColor: '#fff',
+                            pointBorderWidth: 2,
+                            type: 'line',
+                            fill: false
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: getComputedStyle(document.body).getPropertyValue('--text')
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.dataset.label}: ${formatCurrencyCOP(context.parsed.y)}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                color: getComputedStyle(document.body).getPropertyValue('--text-light'),
+                                callback: function(value) {
+                                    if (value >= 1e9) return (value / 1e9).toFixed(1) + 'B';
+                                    if (value >= 1e6) return (value / 1e6).toFixed(1) + 'M';
+                                    if (value >= 1e3) return (value / 1e3).toFixed(1) + 'K';
+                                    return value;
+                                }
+                            },
+                            grid: {
+                                color: 'rgba(0,0,0,0.05)'
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                color: getComputedStyle(document.body).getPropertyValue('--text')
+                            },
+                            grid: {
+                                display: false
+                            }
+                        }
+                    },
+                    animation: {
+                        duration: 1000,
+                        easing: 'easeOutQuart'
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
